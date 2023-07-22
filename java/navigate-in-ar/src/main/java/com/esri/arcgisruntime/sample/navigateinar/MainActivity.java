@@ -18,6 +18,7 @@ package com.esri.arcgisruntime.sample.navigateinar;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -91,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         BottomSheetBehavior<View> sheetBehavior = BottomSheetBehavior.from(findViewById(R.id.standard_bottom_sheet));
-        sheetBehavior.setPeekHeight(300);
+        sheetBehavior.setPeekHeight(260);
         sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
         // authentication with an API key or named user is required
@@ -190,6 +191,18 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d("MainActivity", mSelectedArcGISFeature.toString());
                                 mSelectedArcGISFeature.getGeometry();
                                 mAttributeID = mSelectedArcGISFeature.getAttributes().get("objectid").toString();
+
+                                mNavigateButton.setOnClickListener(v -> {
+                                    // set the route result in ar navigate activity
+                                    ARNavigateActivity.sParcel = mSelectedArcGISFeature.getGeometry();
+                                    // pass route to activity and navigate
+                                    Intent intent = new Intent(MainActivity.this, ARNavigateActivity.class);
+                                    Bundle bundle = new Bundle();
+                                    startActivity(intent, bundle);
+                                });
+                                mNavigateButton.setVisibility(View.VISIBLE);
+                                mHelpLabel.setText(R.string.nav_ready_message);
+
                             }
                         } else {
                             // none of the features on the map were selected

@@ -36,7 +36,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.geometry.Geometry;
 import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.geometry.Polygon;
+import com.esri.arcgisruntime.geometry.Polyline;
 import com.esri.arcgisruntime.location.AndroidLocationDataSource;
 import com.esri.arcgisruntime.mapping.ArcGISScene;
 import com.esri.arcgisruntime.mapping.ArcGISTiledElevationSource;
@@ -68,8 +71,8 @@ public class ARNavigateActivity extends AppCompatActivity {
   private TextView mHelpLabel;
   private View mCalibrationView;
 
-  public static RouteResult sRouteResult;
-
+  // public static RouteResult sRouteResult;
+  public static Geometry sParcel;
   private ArcGISScene mScene;
 
   private boolean mIsCalibrating = false;
@@ -84,8 +87,8 @@ public class ARNavigateActivity extends AppCompatActivity {
     setContentView(R.layout.activity_ar);
 
     // ensure at route has been set by the previous activity
-    if (sRouteResult.getRoutes().get(0) == null) {
-      String error = "Route not set before launching activity!";
+    if (sParcel == null) {
+      String error = "Parcel not set before launching activity!";
       Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
       Log.e(TAG, error);
     }
@@ -120,11 +123,19 @@ public class ARNavigateActivity extends AppCompatActivity {
     // create and add a graphics overlay for showing the route line
     GraphicsOverlay routeOverlay = new GraphicsOverlay();
     mArView.getSceneView().getGraphicsOverlays().add(routeOverlay);
-    Graphic routeGraphic = new Graphic(sRouteResult.getRoutes().get(0).getRouteGeometry());
-    routeOverlay.getGraphics().add(routeGraphic);
+    Polygon polygon = (Polygon)sParcel;
+    Polyline lines = polygon.toPolyline();
+    Graphic parcelGraphic = new Graphic(lines);
+
+    String type = parcelGraphic.getGeometry().getGeometryType().name();
+    Log.d("MainAR",type);
+
+    routeOverlay.getGraphics().add(parcelGraphic);
+
     // display the graphic 3 meters above the ground
     routeOverlay.getSceneProperties().setSurfacePlacement(LayerSceneProperties.SurfacePlacement.RELATIVE);
-    routeOverlay.getSceneProperties().setAltitudeOffset(3);
+    routeOverlay.getSceneProperties().setAltitudeOffset(1);
+
     // create a renderer for the route geometry
     SolidStrokeSymbolLayer strokeSymbolLayer = new SolidStrokeSymbolLayer(1, Color.YELLOW, new LinkedList<>(),
         StrokeSymbolLayer.LineStyle3D.TUBE);
@@ -164,33 +175,33 @@ public class ARNavigateActivity extends AppCompatActivity {
       }
     });
 
-    // start navigation
-    Button navigateButton = findViewById(R.id.navigateStartButton);
-    // start turn-by-turn when the user is ready
-    navigateButton.setOnClickListener(v -> {
-      // create a route tracker with the route result
-      mRouteTracker = new RouteTracker(this, sRouteResult, 0, true);
-      // initialize text-to-speech to play navigation voice guidance
-      mTextToSpeech = new TextToSpeech(this, status -> {
-        if (status != TextToSpeech.ERROR) {
-          mTextToSpeech.setLanguage(Resources.getSystem().getConfiguration().locale);
-        }
-      });
-      mRouteTracker.addNewVoiceGuidanceListener((RouteTracker.NewVoiceGuidanceEvent newVoiceGuidanceEvent) -> {
-        // Get new guidance
-        String newGuidanceText = newVoiceGuidanceEvent.getVoiceGuidance().getText();
-        // Display and then read out the new guidance
-        mHelpLabel.setText(newGuidanceText);
-        // read out directions
-        mTextToSpeech.stop();
-        mTextToSpeech.speak(newGuidanceText, TextToSpeech.QUEUE_FLUSH, null);
-      });
-      mRouteTracker
-          .addTrackingStatusChangedListener((RouteTracker.TrackingStatusChangedEvent trackingStatusChangedEvent) -> {
-            // Display updated guidance
-            mHelpLabel.setText(mRouteTracker.generateVoiceGuidance().getText());
-          });
-    });
+//    // start navigation
+//    Button navigateButton = findViewById(R.id.navigateStartButton);
+//    // start turn-by-turn when the user is ready
+//    navigateButton.setOnClickListener(v -> {
+//      // create a route tracker with the route result
+//      mRouteTracker = new RouteTracker(this, sRouteResult, 0, true);
+//      // initialize text-to-speech to play navigation voice guidance
+//      mTextToSpeech = new TextToSpeech(this, status -> {
+//        if (status != TextToSpeech.ERROR) {
+//          mTextToSpeech.setLanguage(Resources.getSystem().getConfiguration().locale);
+//        }
+//      });
+//      mRouteTracker.addNewVoiceGuidanceListener((RouteTracker.NewVoiceGuidanceEvent newVoiceGuidanceEvent) -> {
+//        // Get new guidance
+//        String newGuidanceText = newVoiceGuidanceEvent.getVoiceGuidance().getText();
+//        // Display and then read out the new guidance
+//        mHelpLabel.setText(newGuidanceText);
+//        // read out directions
+//        mTextToSpeech.stop();
+//        mTextToSpeech.speak(newGuidanceText, TextToSpeech.QUEUE_FLUSH, null);
+//      });
+//      mRouteTracker
+//          .addTrackingStatusChangedListener((RouteTracker.TrackingStatusChangedEvent trackingStatusChangedEvent) -> {
+//            // Display updated guidance
+//            mHelpLabel.setText(mRouteTracker.generateVoiceGuidance().getText());
+//          });
+//    });
 
     // wire up joystick seek bars to allow manual calibration of height and heading
     JoystickSeekBar headingJoystick = findViewById(R.id.headingJoystick);
