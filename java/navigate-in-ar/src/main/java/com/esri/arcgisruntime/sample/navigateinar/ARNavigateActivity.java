@@ -16,14 +16,22 @@
 
 package com.esri.arcgisruntime.sample.navigateinar;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.speech.tts.TextToSpeech;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -175,33 +183,12 @@ public class ARNavigateActivity extends AppCompatActivity {
       }
     });
 
-//    // start navigation
-//    Button navigateButton = findViewById(R.id.navigateStartButton);
-//    // start turn-by-turn when the user is ready
-//    navigateButton.setOnClickListener(v -> {
-//      // create a route tracker with the route result
-//      mRouteTracker = new RouteTracker(this, sRouteResult, 0, true);
-//      // initialize text-to-speech to play navigation voice guidance
-//      mTextToSpeech = new TextToSpeech(this, status -> {
-//        if (status != TextToSpeech.ERROR) {
-//          mTextToSpeech.setLanguage(Resources.getSystem().getConfiguration().locale);
-//        }
-//      });
-//      mRouteTracker.addNewVoiceGuidanceListener((RouteTracker.NewVoiceGuidanceEvent newVoiceGuidanceEvent) -> {
-//        // Get new guidance
-//        String newGuidanceText = newVoiceGuidanceEvent.getVoiceGuidance().getText();
-//        // Display and then read out the new guidance
-//        mHelpLabel.setText(newGuidanceText);
-//        // read out directions
-//        mTextToSpeech.stop();
-//        mTextToSpeech.speak(newGuidanceText, TextToSpeech.QUEUE_FLUSH, null);
-//      });
-//      mRouteTracker
-//          .addTrackingStatusChangedListener((RouteTracker.TrackingStatusChangedEvent trackingStatusChangedEvent) -> {
-//            // Display updated guidance
-//            mHelpLabel.setText(mRouteTracker.generateVoiceGuidance().getText());
-//          });
-//    });
+    // start navigation
+    Button navigateButton = findViewById(R.id.navigateStartButton);
+    // start turn-by-turn when the user is ready
+    navigateButton.setOnClickListener(v -> {
+      screenShot(findViewById(R.id.arView));
+            });
 
     // wire up joystick seek bars to allow manual calibration of height and heading
     JoystickSeekBar headingJoystick = findViewById(R.id.headingJoystick);

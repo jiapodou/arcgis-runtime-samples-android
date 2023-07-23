@@ -32,4 +32,6 @@ dependencies {
     // arcgis-android & appcompat lib dependencies from rootProject build.gradle
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
     implementation "com.esri.arcgisruntime:arcgis-android-toolkit:$arcgisToolkitVersion"
+    implementation 'com.android.support:cardview-v7:28.0.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
 }

@@ -1,69 +1,74 @@
 package com.esri.arcgisruntime.sample.navigateinar;
 
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
-
+import android.view.LayoutInflater;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-public class MyRecyclerViewAdapter extends RecyclerView
-        .Adapter<MyRecyclerViewAdapter
-        .DataObjectHolder> {
-    private static String LOG_TAG = "MyRecyclerViewAdapter";
-    private ArrayList<DataObject> mDataset;
-    private static MyClickListener myClickListener;
-    public static class DataObjectHolder extends RecyclerView.ViewHolder
-            implements View
-            .OnClickListener {
-        TextView label;
-        TextView dateTime;
-        public DataObjectHolder(View itemView) {
-            super(itemView);
-            label = (TextView) itemView.findViewById(R.id.textView);
-            dateTime = (TextView) itemView.findViewById(R.id.textView2);
-            Log.i(LOG_TAG, "Adding Listener");
-            itemView.setOnClickListener(this);
+import java.util.List;
+
+// The adapter class which extends RecyclerView Adapter
+public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.MyView> {
+
+    // List with String type
+    private List<String> list;
+
+    private List<String> listImage;
+
+    // View Holder class which extends RecyclerView.ViewHolder
+    public class MyView extends RecyclerView.ViewHolder {
+
+        // Text View
+        TextView textView;
+        ImageView imageView;
+
+        // parameterised constructor for View Holder class
+        // which takes the view as a parameter
+        public MyView(View view) {
+            super(view);
+
+            // initialise TextView with id
+            textView = (TextView) view.findViewById(R.id.textview);
         }
-        @Override
-        public void onClick(View v) {
-            myClickListener.onItemClick(getAdapterPosition(), v);
-        }
     }
-    public void setOnItemClickListener(MyClickListener myClickListener) {
-        this.myClickListener = myClickListener;
+
+    // Constructor for adapter class
+    // which takes a list of String type
+    public ImageAdapter(List<String> horizontalList) {
+        this.list = horizontalList;
     }
-    public MyRecyclerViewAdapter(ArrayList<DataObject> myDataset) {
-        mDataset = myDataset;
-    }
+
+    // Override onCreateViewHolder which deals
+    // with the inflation of the card layout
+    // as an item for the RecyclerView.
     @Override
-    public DataObjectHolder onCreateViewHolder(ViewGroup parent,
-                                               int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.recyclerview_item, parent, false);
-        DataObjectHolder dataObjectHolder = new DataObjectHolder(view);
-        return dataObjectHolder;
+    public MyView onCreateViewHolder(ViewGroup parent,
+                                     int viewType) {
+
+        // Inflate item.xml using LayoutInflator
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.view_image, parent, false);
+
+        // return itemView
+        return new MyView(itemView);
     }
+
+    // Override onBindViewHolder which deals with the setting of different data
+    // and methods related to clicks on
+    // particular items of the RecyclerView.
     @Override
-    public void onBindViewHolder(DataObjectHolder holder, int position) {
-        holder.label.setText(mDataset.get(position).getmText1());
-        holder.dateTime.setText(mDataset.get(position).getmText2());
+    public void onBindViewHolder(final MyView holder, final int position) {
+        // Set the text of each item of
+        // Recycler view with the list items
+        holder.textView.setText(list.get(position));
+
     }
-    public void addItem(DataObject dataObj, int index) {
-        mDataset.add(dataObj);
-        notifyItemInserted(index);
-    }
-    public void deleteItem(int index) {
-        mDataset.remove(index);
-        notifyItemRemoved(index);
-    }
+
+    // Override getItemCount which Returns
+    // the length of the RecyclerView.
     @Override
     public int getItemCount() {
-        return mDataset.size();
-    }
-    public interface MyClickListener {
-        public void onItemClick(int position, View v);
+        return list.size();
     }
 }

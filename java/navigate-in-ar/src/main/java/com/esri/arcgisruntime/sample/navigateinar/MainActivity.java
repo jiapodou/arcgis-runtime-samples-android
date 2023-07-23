@@ -20,12 +20,14 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +35,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
 import com.esri.arcgisruntime.concurrent.ListenableFuture;
@@ -55,7 +59,9 @@ import com.esri.arcgisruntime.symbology.SimpleMarkerSymbol;
 import com.esri.arcgisruntime.symbology.SimpleRenderer;
 import com.esri.arcgisruntime.tasks.networkanalysis.RouteTask;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -81,19 +87,65 @@ public class MainActivity extends AppCompatActivity {
     private FeatureLayer mFeatureLayer;
     private ArcGISFeature mSelectedArcGISFeature;
     private Callout mCallout;
-
     private String mAttributeID;
-
     private android.graphics.Point mTapPoint;
+
+    public List<Bitmap> mScreenShot;
+
+    // Recycler View object
+    RecyclerView recyclerView;
+
+    // Array list for recycler view data source
+    ArrayList<String> source;
+
+    // Layout Manager
+    RecyclerView.LayoutManager RecyclerViewLayoutManager;
+
+    // adapter class object
+    ImageAdapter adapter;
+
+    // Linear Layout Manager
+    LinearLayoutManager HorizontalLayout;
+
+    BottomSheetBehavior<View> sheetBehavior;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BottomSheetBehavior<View> sheetBehavior = BottomSheetBehavior.from(findViewById(R.id.standard_bottom_sheet));
+        // initialisation with id's
+        recyclerView
+                = (RecyclerView)findViewById(R.id.image_recycler_view);
+        RecyclerViewLayoutManager
+                = new LinearLayoutManager(getApplicationContext());
+
+        // Set LayoutManager on Recycler View
+        recyclerView.setLayoutManager(
+                RecyclerViewLayoutManager);
+
+        // Adding items to RecyclerView.
+        addItemsToRecyclerViewArrayList();
+
+        // calling constructor of adapter
+        // with source list as a parameter
+        adapter = new ImageAdapter(source);
+
+        // Set Horizontal Layout Manager
+        // for Recycler view
+        HorizontalLayout
+                = new LinearLayoutManager(
+                MainActivity.this,
+                LinearLayoutManager.HORIZONTAL,
+                false);
+        recyclerView.setLayoutManager(HorizontalLayout);
+
+        // Set adapter on recycler view
+        recyclerView.setAdapter(adapter);
+
+        sheetBehavior = BottomSheetBehavior.from(findViewById(R.id.standard_bottom_sheet));
         sheetBehavior.setPeekHeight(260);
-        sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
         // authentication with an API key or named user is required
         // to access basemaps and other location services
@@ -130,9 +182,24 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
             }
         });
-        //[DocRef: END]
+    }
 
+    private void showBottomSheetDialog() {
+        sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+    }
 
+    // Function to add items in RecyclerView.
+    public void addItemsToRecyclerViewArrayList()
+    {
+        // Adding items to ArrayList
+        source = new ArrayList<>();
+        source.add("gfg");
+        source.add("is");
+        source.add("best");
+        source.add("site");
+        source.add("for");
+        source.add("interview");
+        source.add("preparation");
     }
 
     /**
@@ -192,13 +259,18 @@ public class MainActivity extends AppCompatActivity {
                                 mSelectedArcGISFeature.getGeometry();
                                 mAttributeID = mSelectedArcGISFeature.getAttributes().get("objectid").toString();
 
+                                showBottomSheetDialog();
+
                                 mNavigateButton.setOnClickListener(v -> {
-                                    // set the route result in ar navigate activity
-                                    ARNavigateActivity.sParcel = mSelectedArcGISFeature.getGeometry();
-                                    // pass route to activity and navigate
-                                    Intent intent = new Intent(MainActivity.this, ARNavigateActivity.class);
-                                    Bundle bundle = new Bundle();
-                                    startActivity(intent, bundle);
+                                    if (mSelectedArcGISFeature != null) {
+                                        // set the route result in ar navigate activity
+                                        ARNavigateActivity.sParcel = mSelectedArcGISFeature.getGeometry();
+                                        // pass route to activity and navigate
+                                        Intent intent = new Intent(MainActivity.this, ARNavigateActivity.class);
+                                        Bundle bundle = new Bundle();
+                                        startActivity(intent, bundle);
+                                    }
+
                                 });
                                 mNavigateButton.setVisibility(View.VISIBLE);
                                 mHelpLabel.setText(R.string.nav_ready_message);
@@ -207,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             // none of the features on the map were selected
                             Log.d("MainActivity","Nothing Selected");
+                            sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
                         }
                     } catch (Exception e1) {
                         Log.e(TAG, "Select feature failed: " + e1.getMessage());
@@ -215,101 +288,6 @@ public class MainActivity extends AppCompatActivity {
                 return super.onSingleTapConfirmed(motionEvent);
             }
         });
-
-
-        /*
-        mRouteTask.addDoneLoadingListener(() -> {
-            if (mRouteTask.getLoadStatus() == LoadStatus.LOADED) {
-                // notify the user to place start point
-                mHelpLabel.setText(R.string.place_start_message);
-                // listen for a single tap
-                mMapView.setOnTouchListener(new DefaultMapViewOnTouchListener(this, mMapView) {
-                    @Override
-                    public boolean onSingleTapConfirmed(MotionEvent motionEvent) {
-                        // if no start point has been defined
-                        if (mStartPoint == null) {
-                            // create a start point at the tapped point
-                            mStartPoint = MainActivity.this.mMapView.screenToLocation(
-                                    new android.graphics.Point(Math.round(motionEvent.getX()), Math.round(motionEvent.getY())));
-                            Graphic graphic = new Graphic(mStartPoint);
-                            mStopsOverlay.getGraphics().add(graphic);
-                            // notify user to place end point
-                            mHelpLabel.setText(R.string.place_end_message);
-                            // if no end point has been defined
-                        } else if (mEndPoint == null) {
-                            // crate an end point at the tapped point
-                            mEndPoint = MainActivity.this.mMapView.screenToLocation(
-                                    new android.graphics.Point(Math.round(motionEvent.getX()), Math.round(motionEvent.getY())));
-                            Graphic graphic = new Graphic(mEndPoint);
-                            mStopsOverlay.getGraphics().add(graphic);
-                            // solve the route between the two points
-                            // update UI
-                            mHelpLabel.setText(R.string.solving_route_message);
-                            final ListenableFuture<RouteParameters> listenableFuture = mRouteTask.createDefaultParametersAsync();
-                            listenableFuture.addDoneListener(() -> {
-                                try {
-                                    RouteParameters routeParameters = listenableFuture.get();
-                                    // parameters needed for navigation (happens in ARNavigate)
-                                    routeParameters.setReturnStops(true);
-                                    routeParameters.setReturnDirections(true);
-                                    routeParameters.setReturnRoutes(true);
-                                    // this sample is intended for navigating while walking only
-                                    List<TravelMode> travelModes = mRouteTask.getRouteTaskInfo().getTravelModes();
-                                    TravelMode walkingMode = travelModes.get(0);
-                                    routeParameters.setTravelMode(walkingMode);
-                                    // add stops
-                                    Collection<Stop> routeStops = new ArrayList<>();
-                                    routeStops.add(new Stop(mStartPoint));
-                                    routeStops.add(new Stop(mEndPoint));
-                                    routeParameters.setStops(routeStops);
-                                    // set return directions as true to return turn-by-turn directions in the result of
-                                    routeParameters.setReturnDirections(true);
-                                    // solve the route
-                                    ListenableFuture<RouteResult> routeResultFuture = mRouteTask.solveRouteAsync(routeParameters);
-                                    routeResultFuture.addDoneListener(() -> {
-                                        try {
-                                            // get the route result
-                                            RouteResult routeResult = routeResultFuture.get();
-                                            // get the route from the route result
-                                            Route route = routeResult.getRoutes().get(0);
-                                            // create a mRouteSymbol graphic
-                                            Graphic routeGraphic = new Graphic(route.getRouteGeometry());
-                                            // add mRouteSymbol graphic to the map
-                                            mRouteOverlay.getGraphics().add(routeGraphic);
-                                            mNavigateButton.setOnClickListener(v -> {
-                                                // set the route result in ar navigate activity
-                                                ARNavigateActivity.sRouteResult = routeResult;
-                                                // pass route to activity and navigate
-                                                Intent intent = new Intent(MainActivity.this, ARNavigateActivity.class);
-                                                Bundle bundle = new Bundle();
-                                                startActivity(intent, bundle);
-                                            });
-                                            mNavigateButton.setVisibility(View.VISIBLE);
-                                            mHelpLabel.setText(R.string.nav_ready_message);
-                                        } catch (InterruptedException | ExecutionException e) {
-                                            String error = "Error getting route result: " + e.getMessage();
-                                            Toast.makeText(MainActivity.this, error, Toast.LENGTH_LONG).show();
-                                            Log.e(TAG, error);
-                                        }
-                                    });
-                                } catch (InterruptedException | ExecutionException ex) {
-                                    String error = "Error generating route parameters: " + ex.getMessage();
-                                    Toast.makeText(MainActivity.this, error, Toast.LENGTH_LONG).show();
-                                    Log.e(TAG, error);
-                                }
-                            });
-                        }
-                        return true;
-                    }
-                });
-            } else {
-                String error = "Error connecting to route service: " + mRouteTask.getLoadError().getCause();
-                Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
-                Log.e(TAG, error);
-                mHelpLabel.setText(getString(R.string.route_failed_error_message));
-            }
-        });
-        */
 
         // create a graphics overlay for showing the calculated route and add it to the map view
         mRouteOverlay = new GraphicsOverlay();

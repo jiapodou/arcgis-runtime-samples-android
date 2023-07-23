@@ -59,7 +59,7 @@
         android:layout_height="48dp"
         android:layout_marginBottom="24dp"
         android:layout_marginEnd="16dp"
-        android:text="@string/navigation_start"
+        android:text="Screenshot"
         app:layout_constraintBottom_toBottomOf="@+id/arView"
         app:layout_constraintEnd_toEndOf="@+id/arView" />
 
