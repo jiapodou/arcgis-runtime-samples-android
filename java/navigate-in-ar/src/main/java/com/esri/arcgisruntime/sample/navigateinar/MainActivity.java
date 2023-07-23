@@ -18,14 +18,21 @@ package com.esri.arcgisruntime.sample.navigateinar;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -35,16 +42,20 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
 import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.data.ArcGISFeature;
+import com.esri.arcgisruntime.data.Attachment;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.layers.FeatureLayer;
 import com.esri.arcgisruntime.loadable.LoadStatus;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.Basemap;
+import com.esri.arcgisruntime.mapping.BasemapStyle;
 import com.esri.arcgisruntime.mapping.GeoElement;
 import com.esri.arcgisruntime.mapping.LayerList;
 import com.esri.arcgisruntime.mapping.MobileMapPackage;
@@ -61,10 +72,17 @@ import com.esri.arcgisruntime.tasks.networkanalysis.RouteTask;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final int RESULT_LOAD_IMAGE = 1;
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -90,8 +108,6 @@ public class MainActivity extends AppCompatActivity {
     private String mAttributeID;
     private android.graphics.Point mTapPoint;
 
-    public List<Bitmap> mScreenShot;
-
     // Recycler View object
     RecyclerView recyclerView;
 
@@ -109,10 +125,18 @@ public class MainActivity extends AppCompatActivity {
 
     BottomSheetBehavior<View> sheetBehavior;
 
+    private List<Attachment> attachments;
+
+    private ArrayList<String> attachmentList = new ArrayList<>();
+
+    private ProgressDialog progressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        progressDialog = new ProgressDialog(this);
 
         // initialisation with id's
         recyclerView
@@ -134,14 +158,19 @@ public class MainActivity extends AppCompatActivity {
         // Set Horizontal Layout Manager
         // for Recycler view
         HorizontalLayout
-                = new LinearLayoutManager(
-                MainActivity.this,
-                LinearLayoutManager.HORIZONTAL,
-                false);
+                = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(HorizontalLayout);
 
         // Set adapter on recycler view
         recyclerView.setAdapter(adapter);
+
+
+        adapter.setItemCallback(new ImageAdapter.ItemCallback() {
+            @Override
+            public void onOpenDetails() {
+                selectAttachment();
+            }
+        });
 
         sheetBehavior = BottomSheetBehavior.from(findViewById(R.id.standard_bottom_sheet));
         sheetBehavior.setPeekHeight(260);
@@ -162,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
 
         //[DocRef: Name=Open Mobile Map Package-android, Category=Work with maps, Topic=Create an offline map]
         // create the mobile map package
-        mMapPackage = new MobileMapPackage(getExternalFilesDir(null) + "/Steve_Beta.mmpk");
+        mMapPackage = new MobileMapPackage(getExternalFilesDir(null) + "/Steve_Beta111.mmpk");
         // load the mobile map package asynchronously
         mMapPackage.loadAsync();
 
@@ -174,7 +203,10 @@ public class MainActivity extends AppCompatActivity {
                 mMap = mMapPackage.getMaps().get(0);
                 mMapView.setMap(mMap);
                 LayerList operationalLayers = mMap.getOperationalLayers();
-                mFeatureLayer = (FeatureLayer) operationalLayers.get(6);
+                Log.d("MainActivity",operationalLayers.get(0).getName());
+                mFeatureLayer = (FeatureLayer) operationalLayers.get(0);
+                ARNavigateActivity.exeFLayer = (FeatureLayer) operationalLayers.get(1);
+                mMap.setBasemap(new Basemap(BasemapStyle.ARCGIS_LIGHT_GRAY));
 
             } else {
                 String error = "Error loading mobile map package: " + mMapPackage.getLoadError().getMessage();
@@ -193,14 +225,41 @@ public class MainActivity extends AppCompatActivity {
     {
         // Adding items to ArrayList
         source = new ArrayList<>();
-        source.add("gfg");
-        source.add("is");
-        source.add("best");
-        source.add("site");
-        source.add("for");
-        source.add("interview");
-        source.add("preparation");
+        source.add("");
     }
+
+    private void selectAttachment() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent,"Select Picture"), 1);
+    }
+
+    /**
+     * Upload the selected image from the gallery as an attachment to the selected feature
+     *
+     * @param requestCode RESULT_LOAD_IMAGE request code to identify the requesting activity
+     * @param resultCode  activity result code
+     * @param data        Uri of the selected image
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+            Uri selectedImage = data.getData();
+            try {
+                fetchAttachment();
+                Log.d("Main", String.valueOf(attachments.size()));
+            } catch (Exception e) {
+                String error = "Error converting image to byte array: " + e.getMessage();
+                Log.e(TAG, error);
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
 
     /**
      * Start location display and define route task and graphic overlays.
@@ -301,6 +360,85 @@ public class MainActivity extends AppCompatActivity {
         SimpleRenderer stopRenderer = new SimpleRenderer(stopSymbol);
         mStopsOverlay.setRenderer(stopRenderer);
         mMapView.getGraphicsOverlays().add(mStopsOverlay);
+    }
+
+    private void fetchAttachment() {
+
+        attachmentList = new ArrayList<>();
+
+        final ListenableFuture<List<Attachment>> attachmentResults = mSelectedArcGISFeature.fetchAttachmentsAsync();
+        attachmentResults.addDoneListener(() -> {
+            try {
+                attachments = attachmentResults.get();
+                // if selected feature has attachments, display them in a list fashion
+                if (!attachments.isEmpty()) {
+                    for (Attachment attachment : attachments) {
+                        attachmentList.add(attachment.getName());
+                    }
+                    runOnUiThread(() -> {
+                        if (progressDialog.isShowing()) {
+                            progressDialog.dismiss();
+                        }
+//                        adapter = new CustomList(this, attachmentList);
+//                        listView.setAdapter(adapter);
+//                        adapter.notifyDataSetChanged();
+                    });
+                }
+            } catch (Exception e) {
+                String error = "Error getting attachment: " + e.getMessage();
+                Log.e(TAG, error);
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void fetchAttachmentAsync(final int position) {
+
+        progressDialog.setTitle("Downloading");
+        progressDialog.setMessage("Wait");
+        progressDialog.show();
+
+        // create a listenableFuture to fetch the attachment asynchronously
+        final ListenableFuture<InputStream> fetchDataFuture = attachments.get(position).fetchDataAsync();
+        fetchDataFuture.addDoneListener(() -> {
+            try {
+                String fileName = attachmentList.get(position);
+                // create a drawable from InputStream
+                Drawable d = Drawable.createFromStream(fetchDataFuture.get(), fileName);
+                // create a bitmap from drawable
+                Bitmap bitmap = ((BitmapDrawable) d).getBitmap();
+                File fileDir = new File(getExternalFilesDir(null) + "/ArcGIS/Attachments");
+                // create folder /ArcGIS/Attachments in external storage
+                boolean isDirectoryCreated = fileDir.exists();
+                if (!isDirectoryCreated) {
+                    isDirectoryCreated = fileDir.mkdirs();
+                }
+                File file = null;
+                if (isDirectoryCreated) {
+                    file = new File(fileDir, fileName);
+                    FileOutputStream fos = new FileOutputStream(file);
+                    // compress the bitmap to PNG format
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 90, fos);
+                    fos.flush();
+                    fos.close();
+                }
+
+                if (progressDialog.isShowing()) {
+                    progressDialog.dismiss();
+                }
+                // open the file in gallery
+                Intent i = new Intent();
+                i.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                i.setAction(Intent.ACTION_VIEW);
+                Uri contentUri = FileProvider
+                        .getUriForFile(getApplicationContext(), getApplicationContext().getPackageName() + ".provider", file);
+                i.setDataAndType(contentUri, "image/png");
+                startActivity(i);
+
+            } catch (Exception e) {
+                Log.d(TAG, e.toString());
+            }
+        });
     }
 
     /**

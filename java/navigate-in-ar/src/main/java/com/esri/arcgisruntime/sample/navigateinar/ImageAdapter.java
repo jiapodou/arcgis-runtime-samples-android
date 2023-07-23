@@ -31,7 +31,18 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.MyView> {
 
             // initialise TextView with id
             textView = (TextView) view.findViewById(R.id.textview);
+            imageView = (ImageView) view.findViewById(R.id.image_view);
         }
+    }
+
+    interface ItemCallback {
+        void onOpenDetails();
+    }
+
+    private ItemCallback itemCallback;
+
+    public void setItemCallback(ItemCallback itemCallback) {
+        this.itemCallback = itemCallback;
     }
 
     // Constructor for adapter class
@@ -62,6 +73,13 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.MyView> {
         // Set the text of each item of
         // Recycler view with the list items
         holder.textView.setText(list.get(position));
+
+        holder.imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                itemCallback.onOpenDetails();
+            }
+        });
 
     }
 

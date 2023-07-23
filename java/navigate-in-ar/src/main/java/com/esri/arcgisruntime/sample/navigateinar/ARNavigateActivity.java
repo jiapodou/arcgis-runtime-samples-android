@@ -48,11 +48,14 @@ import com.esri.arcgisruntime.geometry.Geometry;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.Polygon;
 import com.esri.arcgisruntime.geometry.Polyline;
+import com.esri.arcgisruntime.layers.FeatureLayer;
+import com.esri.arcgisruntime.loadable.LoadStatus;
 import com.esri.arcgisruntime.location.AndroidLocationDataSource;
 import com.esri.arcgisruntime.mapping.ArcGISScene;
 import com.esri.arcgisruntime.mapping.ArcGISTiledElevationSource;
 import com.esri.arcgisruntime.mapping.Basemap;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
+import com.esri.arcgisruntime.mapping.MobileScenePackage;
 import com.esri.arcgisruntime.mapping.NavigationConstraint;
 import com.esri.arcgisruntime.mapping.Surface;
 import com.esri.arcgisruntime.mapping.view.Camera;
@@ -61,6 +64,9 @@ import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.LayerSceneProperties;
 import com.esri.arcgisruntime.navigation.RouteTracker;
 import com.esri.arcgisruntime.symbology.MultilayerPolylineSymbol;
+import com.esri.arcgisruntime.symbology.Renderer;
+import com.esri.arcgisruntime.symbology.SimpleFillSymbol;
+import com.esri.arcgisruntime.symbology.SimpleLineSymbol;
 import com.esri.arcgisruntime.symbology.SimpleRenderer;
 import com.esri.arcgisruntime.symbology.SolidStrokeSymbolLayer;
 import com.esri.arcgisruntime.symbology.StrokeSymbolLayer;
@@ -69,6 +75,7 @@ import com.esri.arcgisruntime.tasks.networkanalysis.RouteResult;
 import com.esri.arcgisruntime.toolkit.ar.ArLocationDataSource;
 import com.esri.arcgisruntime.toolkit.ar.ArcGISArView;
 import com.esri.arcgisruntime.toolkit.control.JoystickSeekBar;
+import com.google.ar.core.Plane;
 
 public class ARNavigateActivity extends AppCompatActivity {
 
@@ -76,11 +83,14 @@ public class ARNavigateActivity extends AppCompatActivity {
 
   private ArcGISArView mArView;
 
+  private MobileScenePackage mMobileScenePackage;
+
   private TextView mHelpLabel;
   private View mCalibrationView;
 
   // public static RouteResult sRouteResult;
   public static Geometry sParcel;
+  public static FeatureLayer exeFLayer;
   private ArcGISScene mScene;
 
   private boolean mIsCalibrating = false;
@@ -119,7 +129,7 @@ public class ARNavigateActivity extends AppCompatActivity {
     elevationSurface.getElevationSources().add(elevationSource);
     mArView.getSceneView().getScene().setBaseSurface(elevationSurface);
     // allow the user to navigate underneath the surface
-    elevationSurface.setNavigationConstraint(NavigationConstraint.NONE);
+    elevationSurface.setNavigationConstraint(NavigationConstraint.STAY_ABOVE);
     // hide the basemap. The image feed provides map context while navigating in AR
     elevationSurface.setOpacity(0f);
     // disable plane visualization. It is not useful for this AR scenario.
@@ -136,7 +146,7 @@ public class ARNavigateActivity extends AppCompatActivity {
     Graphic parcelGraphic = new Graphic(lines);
 
     String type = parcelGraphic.getGeometry().getGeometryType().name();
-    Log.d("MainAR",type);
+    Log.d("MainAR","type is" +type);
 
     routeOverlay.getGraphics().add(parcelGraphic);
 
@@ -145,7 +155,7 @@ public class ARNavigateActivity extends AppCompatActivity {
     routeOverlay.getSceneProperties().setAltitudeOffset(1);
 
     // create a renderer for the route geometry
-    SolidStrokeSymbolLayer strokeSymbolLayer = new SolidStrokeSymbolLayer(1, Color.YELLOW, new LinkedList<>(),
+    SolidStrokeSymbolLayer strokeSymbolLayer = new SolidStrokeSymbolLayer(0.5, Color.GREEN, new LinkedList<>(),
         StrokeSymbolLayer.LineStyle3D.TUBE);
     strokeSymbolLayer.setCapStyle(StrokeSymbolLayer.CapStyle.ROUND);
     ArrayList<SymbolLayer> layers = new ArrayList<>();
@@ -153,6 +163,28 @@ public class ARNavigateActivity extends AppCompatActivity {
     MultilayerPolylineSymbol polylineSymbol = new MultilayerPolylineSymbol(layers);
     SimpleRenderer polylineRenderer = new SimpleRenderer(polylineSymbol);
     routeOverlay.setRenderer(polylineRenderer);
+
+    // create and add a graphics overlay for showing the route line
+
+    final SimpleLineSymbol lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.Style.SOLID, Color.BLACK, 1.0f);
+    final SimpleFillSymbol fillSymbol = new SimpleFillSymbol(SimpleFillSymbol.Style.SOLID, Color.WHITE, lineSymbol);
+    SimpleRenderer renderer = new SimpleRenderer(fillSymbol);
+    Renderer.SceneProperties renderProperties = renderer.getSceneProperties();
+    renderProperties.setExtrusionMode(Renderer.SceneProperties.ExtrusionMode.BASE_HEIGHT);
+    renderProperties.setExtrusionExpression("4");
+
+    if (exeFLayer != null) {
+
+      FeatureLayer copy = exeFLayer.copy();
+      // add the feature layer to the scene
+      mScene.getOperationalLayers().add(copy);
+
+      copy.getSceneProperties().setSurfacePlacement(LayerSceneProperties.SurfacePlacement.RELATIVE);
+      copy.getSceneProperties().setAltitudeOffset(0);
+
+      copy.setRenderer(renderer);
+    }
+
 
     // create and start a location data source for use with the route tracker
     AndroidLocationDataSource trackingLocationDataSource = new AndroidLocationDataSource(this);
@@ -163,6 +195,7 @@ public class ARNavigateActivity extends AppCompatActivity {
       }
     });
     trackingLocationDataSource.startAsync();
+
 
     // get references to the ui views defined in the layout
     mHelpLabel = findViewById(R.id.helpLabelTextView);
@@ -186,9 +219,7 @@ public class ARNavigateActivity extends AppCompatActivity {
     // start navigation
     Button navigateButton = findViewById(R.id.navigateStartButton);
     // start turn-by-turn when the user is ready
-    navigateButton.setOnClickListener(v -> {
-      screenShot(findViewById(R.id.arView));
-            });
+    navigateButton.setOnClickListener(v -> Log.d("MainAR", "ScreenShot taken"));
 
     // wire up joystick seek bars to allow manual calibration of height and heading
     JoystickSeekBar headingJoystick = findViewById(R.id.headingJoystick);
@@ -226,6 +257,35 @@ public class ARNavigateActivity extends AppCompatActivity {
 
     // remind the user to calibrate the heading and altitude before starting navigation
     Toast.makeText(this, "Calibrate your heading and altitude before navigating!", Toast.LENGTH_LONG).show();
+  }
+
+  /**
+   * Load the mobile scene package and get the first (and only) scene inside it. Set it to the ArView's SceneView and
+   * set the base surface to opaque and remove any navigation constraint, thus allowing the user to look at a scene
+   * from below. Then call updateTranslationFactorAndOriginCamera with the plane detected by ArCore.
+   *
+   */
+  private void loadSceneFromPackage() {
+    // create a mobile scene package from a path a local .mspk
+    mMobileScenePackage = new MobileScenePackage(
+            getExternalFilesDir(null) + "/mobilescene.mspk");
+    // load the mobile scene package
+    mMobileScenePackage.loadAsync();
+    mMobileScenePackage.addDoneLoadingListener(() -> {
+      // if it loaded successfully and the mobile scene package contains a scene
+      if (mMobileScenePackage.getLoadStatus() == LoadStatus.LOADED && !mMobileScenePackage.getScenes()
+              .isEmpty()) {
+        // get a reference to the first scene in the mobile scene package, which is of a section of philadelphia
+        ArcGISScene philadelphiaScene = mMobileScenePackage.getScenes().get(0);
+        // add the scene to the AR view's scene view
+        mArView.getSceneView().setScene(philadelphiaScene);
+      } else {
+        String error = "Failed to load mobile scene package: " + mMobileScenePackage.getLoadError()
+                .getMessage();
+        Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+        Log.e(TAG, error);
+      }
+    });
   }
 
   /**
