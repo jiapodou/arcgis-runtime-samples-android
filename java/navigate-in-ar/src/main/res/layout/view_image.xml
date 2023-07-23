@@ -26,6 +26,7 @@
 
         <ImageView
             android:id="@+id/image_view"
+            android:scaleType="centerCrop"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:src="@drawable/baseline_add_circle_outline_24"

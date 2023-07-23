@@ -19,6 +19,8 @@ package com.esri.arcgisruntime.sample.navigateinar;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -38,6 +40,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.AnyRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -113,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Array list for recycler view data source
     ArrayList<String> source;
+    ArrayList<Drawable> sourceImage;
 
     RecyclerView recyclerViewC;
 
@@ -161,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
 
         // calling constructor of adapter
         // with source list as a parameter
-        adapter = new ImageAdapter(source);
+        adapter = new ImageAdapter(source, sourceImage);
 
         // Set Horizontal Layout Manager
         // for Recycler view
@@ -174,16 +178,13 @@ public class MainActivity extends AppCompatActivity {
 
 
         // initialisation with id's
-        recyclerViewC
-                = (RecyclerView)findViewById(R.id.cost_recycler_view);
+        recyclerViewC = (RecyclerView)findViewById(R.id.cost_recycler_view);
         RecyclerViewLayoutManager2
                 = new LinearLayoutManager(getApplicationContext());
 
         // Set LayoutManager on Recycler View
         recyclerViewC.setLayoutManager(
                 RecyclerViewLayoutManager2);
-
-
 
         // Adding items to RecyclerView.
         addItems();
@@ -207,6 +208,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onOpenDetails() {
                 selectAttachment();
+            }
+
+            @Override
+            public void onOpenIntent(int pos) {
+                viewAttachment(pos);
             }
         });
 
@@ -314,6 +320,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * get uri to drawable or any other resource type if u wish
+     * @param context - context
+     * @param drawableId - drawable res id
+     * @return - uri
+     */
+    public static final Uri getUriToDrawable(@NonNull Context context,
+                                             @AnyRes int drawableId) {
+        Uri imageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE
+                + "://" + context.getResources().getResourcePackageName(drawableId)
+                + '/' + context.getResources().getResourceTypeName(drawableId)
+                + '/' + context.getResources().getResourceEntryName(drawableId) );
+        return imageUri;
+    }
+
+    private void viewAttachment(int pos) {
+
+        ImageActivity.drawable = sourceImage.get(pos);
+
+        Intent intent = new Intent(MainActivity.this, ImageActivity.class);
+        Bundle bundle = new Bundle();
+        startActivity(intent, bundle);
+    }
+
+    /**
      * Upload the selected image from the gallery as an attachment to the selected feature
      *
      * @param requestCode RESULT_LOAD_IMAGE request code to identify the requesting activity
@@ -325,10 +355,15 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
-            Uri selectedImage = data.getData();
+            sourceImage = new ArrayList<>();
+            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image1));
+            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image2));
+            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image3));
+
+            adapter.setArticles(sourceImage);
+
             try {
-                fetchAttachment();
-                Log.d("Main", String.valueOf(attachments.size()));
+                //fetchAttachment();
             } catch (Exception e) {
                 String error = "Error converting image to byte array: " + e.getMessage();
                 Log.e(TAG, error);
