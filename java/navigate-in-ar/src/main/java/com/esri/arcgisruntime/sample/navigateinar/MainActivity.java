@@ -335,9 +335,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void viewAttachment(int pos) {
-
-        ImageActivity.drawable = sourceImage.get(pos);
-
         Intent intent = new Intent(MainActivity.this, ImageActivity.class);
         Bundle bundle = new Bundle();
         startActivity(intent, bundle);
@@ -357,8 +354,11 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
             sourceImage = new ArrayList<>();
             sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image1));
+            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image4));
             sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image2));
+            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image5));
             sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image3));
+            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image6));
 
             adapter.setArticles(sourceImage);
 

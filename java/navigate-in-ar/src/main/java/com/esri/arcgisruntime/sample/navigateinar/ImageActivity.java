@@ -7,25 +7,35 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.ViewPager;
 
 
 public class ImageActivity extends AppCompatActivity {
 
-    public static Drawable drawable;
+    // creating object of ViewPager
+    ViewPager mViewPager;
+
+    // images array
+    int[] images = {R.drawable.image1, R.drawable.image4,
+                    R.drawable.image2, R.drawable.image5,
+                    R.drawable.image3, R.drawable.image6
+    };
+
+    // Creating Object of ViewPagerAdapter
+    ViewPagerAdapter mViewPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image);
 
-        // ensure at route has been set by the previous activity
-        if (drawable == null) {
-            String error = "Parcel not set before launching activity!";
-            Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
-            Log.e("MainImage", error);
-        }
+        // Initializing the ViewPager Object
+        mViewPager = (ViewPager)findViewById(R.id.viewPagerMain);
 
-        ImageView imageview= (ImageView)findViewById(R.id.image_main);
-        imageview.setImageDrawable(drawable);
+        // Initializing the ViewPagerAdapter
+        mViewPagerAdapter = new ViewPagerAdapter(ImageActivity.this, images);
+
+        // Adding the Adapter to the ViewPager
+        mViewPager.setAdapter(mViewPagerAdapter);
     }
 }
