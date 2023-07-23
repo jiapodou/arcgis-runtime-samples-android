@@ -29,6 +29,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -351,16 +352,33 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
-            sourceImage = new ArrayList<>();
-            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image1));
-            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image4));
-            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image2));
-            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image5));
-            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image3));
-            sourceImage.add(ContextCompat.getDrawable(getApplicationContext(),R.drawable.image6));
 
-            adapter.setArticles(sourceImage);
+        progressDialog.setTitle("Uploading and generating images");
+        progressDialog.setMessage("The attachments are uploading and fetching generated images using stable diffusion");
+        progressDialog.show();
+
+        new CountDownTimer(5000, 1000) {
+
+            public void onFinish() {
+                if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+                    sourceImage = new ArrayList<>();
+                    sourceImage.add(ContextCompat.getDrawable(getApplicationContext(), R.drawable.image1));
+                    sourceImage.add(ContextCompat.getDrawable(getApplicationContext(), R.drawable.image4));
+                    sourceImage.add(ContextCompat.getDrawable(getApplicationContext(), R.drawable.image2));
+                    sourceImage.add(ContextCompat.getDrawable(getApplicationContext(), R.drawable.image5));
+                    sourceImage.add(ContextCompat.getDrawable(getApplicationContext(), R.drawable.image3));
+                    sourceImage.add(ContextCompat.getDrawable(getApplicationContext(), R.drawable.image6));
+
+                    adapter.setArticles(sourceImage);
+
+                    progressDialog.dismiss();
+                }
+            }
+
+            public void onTick(long millisUntilFinished) {
+                // millisUntilFinished    The amount of time until finished.
+            }
+        }.start();
 
             try {
                 //fetchAttachment();
@@ -369,7 +387,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, error);
                 Toast.makeText(this, error, Toast.LENGTH_LONG).show();
             }
-        }
     }
 
 
