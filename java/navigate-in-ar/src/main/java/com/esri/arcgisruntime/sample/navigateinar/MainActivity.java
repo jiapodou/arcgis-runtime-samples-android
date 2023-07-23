@@ -114,11 +114,19 @@ public class MainActivity extends AppCompatActivity {
     // Array list for recycler view data source
     ArrayList<String> source;
 
+    RecyclerView recyclerViewC;
+
+    ArrayList<List<String>> costSource;
+
     // Layout Manager
     RecyclerView.LayoutManager RecyclerViewLayoutManager;
 
+    RecyclerView.LayoutManager RecyclerViewLayoutManager2;
+
     // adapter class object
     ImageAdapter adapter;
+
+    CostAdapter adapterC;
 
     // Linear Layout Manager
     LinearLayoutManager HorizontalLayout;
@@ -163,6 +171,36 @@ public class MainActivity extends AppCompatActivity {
 
         // Set adapter on recycler view
         recyclerView.setAdapter(adapter);
+
+
+        // initialisation with id's
+        recyclerViewC
+                = (RecyclerView)findViewById(R.id.cost_recycler_view);
+        RecyclerViewLayoutManager2
+                = new LinearLayoutManager(getApplicationContext());
+
+        // Set LayoutManager on Recycler View
+        recyclerViewC.setLayoutManager(
+                RecyclerViewLayoutManager2);
+
+
+
+        // Adding items to RecyclerView.
+        addItems();
+
+        // calling constructor of adapter
+        // with source list as a parameter
+        adapterC = new CostAdapter(costSource);
+
+        // Set Horizontal Layout Manager
+        // for Recycler view
+        HorizontalLayout
+                = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
+        recyclerViewC.setLayoutManager(HorizontalLayout);
+
+        // Set adapter on recycler view
+        recyclerViewC.setAdapter(adapterC);
+
 
 
         adapter.setItemCallback(new ImageAdapter.ItemCallback() {
@@ -226,6 +264,45 @@ public class MainActivity extends AppCompatActivity {
         // Adding items to ArrayList
         source = new ArrayList<>();
         source.add("");
+    }
+
+    public void addItems()
+    {
+        // Adding items to ArrayList
+        costSource = new ArrayList<>();
+        List<String> list1 = new ArrayList<>(13);
+        List<String> list2 = new ArrayList<>(13);
+
+        list1.add("$9,300 - $12,600");
+        list1.add("$7,450 - $10,050");
+        list1.add("$143,000 - $193,500");
+        list1.add("$10,900 - $14,700");
+        list1.add("$600 - $800");
+        list1.add("$6,400 - $8,650");
+        list1.add("$159,750 -");
+        list1.add("$216,150");
+        list1.add("$17,850 -");
+        list1.add("$24,150");
+        list1.add("$177,600 -");
+        list1.add("$240,300");
+        list1.add("Studio ADU Cost Estimate");
+
+        list2.add("$11,150 - $15,600");
+        list2.add("$7,450 - $10,050");
+        list2.add("$175,300 - $237,350");
+        list2.add("$11,350 - $15,350");
+        list2.add("$600 - $800");
+        list2.add("$7,250 - $9,800");
+        list2.add("$194,050 -");
+        list2.add("$262,550");
+        list2.add("$19,850 -");
+        list2.add("$25,150");
+        list2.add("$213,250 -");
+        list2.add("$288,500");
+        list2.add("1B ADU Cost Estimate");
+
+        costSource.add(list1);
+        costSource.add(list2);
     }
 
     private void selectAttachment() {

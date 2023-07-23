@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="6dp"
+        android:background="@drawable/border"
+        app:cardCornerRadius="4dp"
+        android:backgroundTint="#F8F8FB">
+
+        <TextView
+            android:id="@+id/textview1"
+            android:text="Your ADU Cost Estimate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textSize="24dp"
+            android:textStyle="bold"
+            style="bol"
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textview2"
+            android:text="Hard Costs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingStart="12dp"
+            android:textSize="21dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/textview1" />
+
+        <TextView
+            android:id="@+id/textview3"
+            android:text="Site/Foundation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:paddingStart="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/textview2" />
+
+        <TextView
+            android:id="@+id/textview4"
+            android:text="Utilities"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:paddingStart="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/textview3" />
+        <TextView
+            android:id="@+id/textview5"
+            android:text="Construction"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:paddingStart="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="10dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/textview4" />
+
+        <TextView
+            android:id="@+id/textviewSite"
+            android:text="$9,300 - $12,600"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textview3" />
+
+        <TextView
+            android:id="@+id/textviewUtilities"
+            android:text="$7,450 - $10,050"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textview4" />
+        <TextView
+            android:id="@+id/textviewConstruction"
+            android:text="$14,300 - $19,350"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textview5" />
+
+        <TextView
+            android:id="@+id/textview6"
+            android:text="Total Hard Costs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingStart="12dp"
+            android:textSize="21dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/textview5" />
+
+        <TextView
+            android:id="@+id/textviewHardStart"
+            android:text="$159,750 -"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="21dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textview6" />
+
+        <TextView
+            android:id="@+id/textviewHardEnd"
+            android:text="$216,150"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="21dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textviewHardStart" />
+
+        <TextView
+            android:id="@+id/textview7"
+            android:text="Soft Costs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingStart="12dp"
+            android:textSize="21dp"
+
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/textviewHardEnd" />
+
+        <TextView
+            android:id="@+id/textview8"
+            android:text="Design"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:paddingStart="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/textview7" />
+
+        <TextView
+            android:id="@+id/textview9"
+            android:text="Survey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:paddingStart="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textview8" />
+        <TextView
+            android:id="@+id/textviewA"
+            android:text="Permits"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:paddingStart="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="10dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textview9" />
+
+        <TextView
+            android:id="@+id/textviewDesign"
+            android:text="$9,300 - $12,600"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textview8" />
+
+        <TextView
+            android:id="@+id/textviewSurvey"
+            android:text="$7,450 - $10,050"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textview9" />
+        <TextView
+            android:id="@+id/textviewPermits"
+            android:text="$14,300 - $19,350"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="18dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textviewA" />
+
+        <TextView
+            android:id="@+id/textviewB"
+            android:text="Total Costs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingStart="12dp"
+            android:textSize="21dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/textviewA" />
+
+        <TextView
+            android:id="@+id/textviewSoftStart"
+            android:text="$159,750 -"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="21dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textviewB" />
+
+        <TextView
+            android:id="@+id/textviewSoftEnd"
+            android:text="$216,150"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="21dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textviewSoftStart" />
+
+        <TextView
+            android:id="@+id/textviewTotal"
+            android:text="Total Soft Costs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingStart="12dp"
+            android:textSize="21dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/textviewSoftEnd" />
+
+        <TextView
+            android:id="@+id/textviewTStart"
+            android:text="$159,750 -"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="21dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/textviewTotal" />
+
+        <TextView
+            android:id="@+id/textviewTEnd"
+            android:text="$216,150"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text"
+            android:textStyle="bold"
+            android:paddingEnd="24dp"
+            android:textSize="21dp"
+            android:paddingBottom="6dp"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textviewTStart" />
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
